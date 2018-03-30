@@ -25,7 +25,7 @@ Sxxr = [rSbeta rSrr rSay];
 % SET TIME AXIS
 dt = 0.01; T = 60; t = [0:dt:T]; N = length(t);
 
-v_g = randn(N,1)/sqrt(d t);    % sqrt(dt) because of lsim
+v_g = randn(N,1)/sqrt(dt);    % sqrt(dt) because of lsim
 w_g = randn(N,1)/sqrt(dt);
 nn = zeros(N,1);
 u  = [nn nn nn w_g v_g];
@@ -45,6 +45,7 @@ ayr = ayr';
 
 
 %Variance calculation through integration of analytic PSD
+
 var_PSD = zeros(1,5);
 for i=1:1:5
     for j=1:1:Nomega-1
@@ -95,6 +96,18 @@ varay_r  = var(ayr);
     
 var_3_r = [varBeta_r varr_r varay_r];
 
+disp('PSD full:');
+disp(var_PSD);
+disp('Lya full:');
+disp(var_L);
+disp('var full:');
+disp(var_3);
+disp('PSD redu:');
+disp(var_PSD_r);
+disp('lya redu:');
+disp(var_L_r);
+disp('var redu:');
+disp(var_3_r);
 
 
 

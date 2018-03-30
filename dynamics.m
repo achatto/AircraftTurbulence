@@ -1,4 +1,4 @@
-% Filename:  cit2a.m
+% Filename:  dynamics.m
 %
 % Calculation of state matrix and input matrix for calculation
 % of asymmetric aircraft response to atmospheric turbulence.
@@ -16,7 +16,7 @@
 %
 % The turbulence filters are derived using the approximated
 % effective one-dimensional power spectral densities for u_g, alpha_g and
-% beta_g.
+% beta_g (Dryden Model).
 % 
 % Data for Cessna Citation Ce-500, start (1)
 
@@ -129,7 +129,15 @@ B = [0   ydr 0    0    0;
 
 % For equations of motion that approximate dutch roll
 % STATE-SPACE MATRICES
-Ar = [yb   yr 0    0    0    0    ybg  0;
+% Ar = [yb   yr 0    0    0    0    ybg  0;
+%      nb    nr nug  0    nag  0    nbg  0;
+%      0     0  0    1    0    0    0    0;
+%      0     0  aug1 aug2 0    0    0    0;
+%      0     0  0    0    0    1    0    0;
+%      0     0  0    0    aag1 aag2 0    0;
+%      0     0  0    0    0    0    0    1;
+%      0     0  0    0    0    0    abg1 abg2];
+Ar = [0   -2*V/b 0    0    0    0    0  0;
      nb    nr nug  0    nag  0    nbg  0;
      0     0  0    1    0    0    0    0;
      0     0  aug1 aug2 0    0    0    0;
@@ -138,7 +146,7 @@ Ar = [yb   yr 0    0    0    0    ybg  0;
      0     0  0    0    0    0    0    1;
      0     0  0    0    0    0    abg1 abg2];
 
-Br = [0   ydr 0    0    0;
+Br = [0  0   0    0    0;
      0   0   0    0    0;
      0   0   bug1 0    0;
      0   0   bug2 0    0;
@@ -148,22 +156,20 @@ Br = [0   ydr 0    0    0;
      0   0   0    0    bbg2];
  Cr = eye (8,8);
  Dr = zeros(8,5); 
+ 
 % SHOW EIGENVALUES OF THE UNCONTROLLED SYSTEM (Full Equations)
 eigA=eig(A)
-% figure(1);
-% sysA=ss(A,B,C,D);
-% pzmap(sysA);
-% title("Pole Zero Map : Uncontrolled System");
+figure(1);
+sysA=ss(A,B,C,D);
+pzmap(sysA);
+title("Pole Zero Map : Uncontrolled System (Full Aircraft Model)");
 
 %SHOW EIGENVALUES OF THE UNCONTROLLED SYSTEM (Reduced Equations)
 eigAr=eig(Ar)
-% figure(2);
-% sysAr=ss(Ar,Br,Cr,Dr);
-% pzmap(sysAr);
-% title("Pole Zero Map : Uncontrolled System (Reduced Equations)");
-% %pause
-% check for yourself that the spiral mode is not stable, the
-% corresponding pole lies in the right-half plane (s = 0.0764).
+figure(2);
+sysAr=ss(Ar,Br,Cr,Dr);
+pzmap(sysAr);
+title("Pole Zero Map : Uncontrolled System (Reduced Equations)");
 
 % THE CESSNA CITATION CE-500 IS NOT STABLE IN SPIRAL MODE (FOR THE cit2a.m 
 % FLIGHT CONDITION), HENCE THE FEEDBACK CONTROLLER TO THE AILERON FOR PHI IS 
@@ -175,32 +181,22 @@ eigAr=eig(Ar)
 %
 %      A = At 
 %
-% NO ALTERATIONS MADE FOR cit1a.m !
+%
 
-% NOTE: SPIRAL MODE IS JUST STABLE WITH K_phi ENTERED BELOW
-Kphi = -0.025;
-K    = [0 Kphi 0 0  0 0  0 0  0 0];
-A1   = A-B(:,1)*K;
-% SHOW EIGENVALUES OF THIS CONTROLLED SYSTEM
-eigA1=eig(A1)
-% figure(3)
-% sysA1=ss(A1,B,C,D);
-% pzmap(sysA1);
-% title("Pole Zero Map : Controlled System (Kphi = -0.025)");
 
 % FOR EFFECT OF K_phi ON AIRCRAFT RESPONSES, ONE OTHER K_phi IS USED
 Kphi = -0.1;
 K    = [0 Kphi 0 0  0 0  0 0  0 0];
 A2   = A-B(:,1)*K;
 eigA2=eig(A2)
-% figure(4);
-% sysA2=ss(A2,B,C,D);
-% pzmap(sysA2);
-% title("Pole Zero Map : Controlled System (Kphi = -0.1)");
+figure(4);
+sysA2=ss(A2,B,C,D);
+pzmap(sysA2);
+title("Pole Zero Map : Controlled System (Full Aircraft Model)");
 
 % SHOW EIGENVALUES OF THIS CONTROLLED SYSTEM
 %eig(A2), pause
 
-save dumpfile A A1 A2 Ar  B Br C D Cr Dr sigma sigmaug_V sigmabg sigmaag Lg V b
-clear
-load dumpfile
+% save dumpfile A A2 Ar  B Br C D Cr Dr sigma sigmaug_V sigmabg sigmaag Lg V b
+% clear
+% load dumpfile
