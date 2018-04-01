@@ -3,10 +3,8 @@
 % Abhishek Chatterjee (4743075)
 % Assignment : AE4304P Stochastic Aerospace Systems Practical
 % Delft University of Technology
-% Simulation of Aircraft Asymmetric Response to Atmospheric Turbulence
-
 % Aircraft Model Definition and Stability Analysis
-
+%
 % Calculation of state matrix and input matrix for calculation
 % of asymmetric aircraft response to atmospheric turbulence.
 % The system model is in the form

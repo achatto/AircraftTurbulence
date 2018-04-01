@@ -3,8 +3,6 @@
 % Abhishek Chatterjee (4743075)
 % Assignment : AE4304P Stochastic Aerospace Systems Practical
 % Delft University of Technology
-% Simulation of Aircraft Asymmetric Response to atmospheric Turbulence
-
 % Calcultion of the analytical and experimental Power Spectral Density
 % functions of the aircraft states. 
 
@@ -24,6 +22,8 @@ w = logspace(-2,2,Nomega);
 % Full Model
 temp = bode(A2,B,C(1,:),D(1,:),4,w);
 temp = temp + bode(A2,B,C(1,:),D(1,:),5,w); Sbeta  = temp.*temp;
+% temp = bode(A2,B,C(1,:),D(1,:),[4,5],w);
+% K = temp(:,1)+temp(:,2); Sbeta2 = K.*K;
 temp = bode(A2,B,C(2,:),D(2,:),4,w);
 temp = temp + bode(A2,B,C(2,:),D(2,:),5,w); Sphi   = temp.*temp;
 temp = bode(A2,B,C(3,:),D(3,:),4,w);
@@ -32,20 +32,23 @@ temp = bode(A2,B,C(4,:),D(4,:),4,w);
 temp = temp + bode(A2,B,C(4,:),D(4,:),5,w); Srr    = temp.*temp;
 temp = bode(A2,B,V*(A2(1,:)+[0 0 0 2*V/b 0    0    0    0    0  0]),V*B(1,:),4,w);
 temp = temp + bode(A2,B,V*(A2(1,:)+[0 0 0 2*V/b 0    0    0    0    0  0]),V*B(1,:),5,w);Say = temp.*temp;
+%temp = bode(A2,B,C(5,:),D(5,:),5,w); Sbetag = temp.*temp;
 
 %Reduced Model
 temp = bode(Ar,Br,Cr(1,:),Dr(1,:),4,w);
 temp = temp + bode(Ar,Br,Cr(1,:),Dr(1,:),5,w); rSbeta  = temp.*temp;
+%temp = bode(Ar,Br,Cr(2,:),Dr(2,:),5,w); rSphi   = temp.*temp;
+%temp = bode(Ar,Br,Cr(3,:),Dr(3,:),5,w); rSpp    = temp.*temp;
 temp = bode(Ar,Br,Cr(2,:),Dr(2,:),4,w);
 temp = temp + bode(Ar,Br,Cr(2,:),Dr(2,:),5,w); rSrr    = temp.*temp;
 temp = bode(Ar,Br,V*(Ar(1,:)+[0 2*V/b 0    0    0    0    0  0]),V*Br(1,:),4,w);
 temp = temp + bode(Ar,Br,V*(Ar(1,:)+[0 2*V/b 0    0    0    0    0  0]),V*Br(1,:),5,w);rSay = temp.*temp;
+%temp = bode(Ar,Br,Cr(5,:),Dr(5,:),5,w); rSbetag = temp.*temp;
 
 Sxx  = [Sbeta Sphi Spp Srr Say];
 Sxxr = [rSbeta rSrr rSay];
 
-% COMPUTE EXPERIMENTAL PSDs
-
+% COMPUTE EX
 % COMPUTE PSDS USING TIME DOMAIN DATA
 
 % SET TIME AXIS
@@ -101,42 +104,36 @@ ayr = ayr';
 
 % COMPUTE PERIODOGRAM AND ESTIMATE PSD
 % CFT
-%Full Model
 BETA  = dt*fft(beta);
 PHI   = dt*fft(phi);
 P     = dt*fft(pbtV);
 R     = dt*fft(rbtV);
 AY    = dt*fft(ay);
-
-%Reduced Model
 BETAr  = dt*fft(betar);
 Rr     = dt*fft(rbtVr);
 AYr    = dt*fft(ayr);
 
 % PSD ESTIMATE (Periodograms)
-
-%Full Model
 Pbeta  = (1/T)*( BETA.*conj(BETA));
 Pphi   = (1/T)*(  PHI.*conj(PHI));
 Pp     = (1/T)*(    P.*conj(P));
 Pr     = (1/T)*(    R.*conj(R));
 Pay    = (1/T)*(    AY.*conj(AY));
-
-%Reduced Model
+%Pbetag = (1/T)*(BETAg.*conj(BETAg));
 Pbetar  = (1/T)*( BETAr.*conj(BETAr));
+%Pphir   = (1/T)*(  PHIr.*conj(PHIr));
+%Ppr     = (1/T)*(    Pr.*conj(Pr));
 Prr     = (1/T)*(    Rr.*conj(Rr));
 Payr    = (1/T)*(AYr.*conj(AYr));
 
 Periodograms = [Pbeta Pphi Pp Pr Pay];
 Periodograms_r = [Pbetar Prr Payr];
-
 % DEFINE FREQUENCY VECTOR
 fs = 1/dt;     % sample frequency
 omega = 2*pi*fs*(0:(N/2)-1)/N;
 
-% SMOOTHED PERIODOGRAMS
+% Smoothed PSD estimate
 
-%Full Model
 Pbeta_s  = zeros((length(Pbeta)-2),1);
 Pphi_s   = zeros((length(Pphi)-2),1);
 Pp_s     = zeros((length(Pp)-2),1);
@@ -150,7 +147,6 @@ for ii = 1:length(Periodograms(1,:))
     end
 end
 
-%Reduced Model
 Pbeta_s_r  = zeros((length(Pbetar)-2),1);
 Pr_s_r     = zeros((length(Prr)-2),1);
 Pay_s_r  = zeros((length(Payr)-2),1);
@@ -164,9 +160,9 @@ end
 
 
 
-%PLOT PSD ESTIMATES
+%Plot PSD Estimates
 
-figure(3); %Full AIrcraft Model
+figure(3);
 subplot(2,2,1); loglog(w,Sxx(:,1),'g--',omega,Pbeta(1:N/2),'-',omega(1:length(omega)-1),Periodograms_ug(1:N/2-1,1),'-.','linewidth',1.5); 
 axis(10.^[-2 2 -12 0]); xlabel('omega [rad/s]'); ylabel('PSD sideslip Sbeta [rad^2/rad/s]');set(gca,'fontsize',15);
 subplot(2,2,2); loglog(w,Sxx(:,2),'g--',omega,Pphi(1:N/2),'-',omega(1:length(omega)-1),Periodograms_ug(1:N/2-1,2),'-.','linewidth',1.5);
@@ -178,14 +174,14 @@ axis(10.^[-2 2 -14 0]); xlabel('omega [rad/s]'); ylabel('PSD yaw rate Srr [rad^2
 legend('Analytical PSD', 'Periodogram','Smoothed Periodogram');set(gca,'fontsize',10);
 suptitle('State PSD Estimates (Full Aircraft Model)');set(gca,'fontsize',15);
 
-figure(4); %Lateral Acceleration Full Aircraft Model
+figure(4)
 subplot(1,1,1); loglog(w,Sxx(:,5),'g--',omega,Pay(1:N/2),'-',omega(1:length(omega)-1),Periodograms_ug(1:N/2-1,5),'-.','linewidth',1.5);
 axis(10.^[-2 2 -14 2]); xlabel('omega [rad/s]'); ylabel('PSD lateral acceleration Say [(m/s^2)^2/rad/s]');set(gca,'fontsize',15);
 legend('Analytical PSD', 'Periodogram','Smoothed Periodogram');set(gca,'fontsize',10);
 suptitle('Lateral acceleration PSD estimate(Full Aircraft Model)');set(gca,'fontsize',15);
 
 
-figure(5); %Reduced Aircraft Model
+figure(5);
 subplot(2,1,1); loglog(w,Sxxr(:,1),'g--',omega,Pbetar(1:N/2),'-',omega(1:length(omega)-1),Periodograms_ug_r(1:N/2-1,1),'-.','linewidth',1.5); 
 axis(10.^[-2 2 -12 0]); xlabel('omega [rad/s]'); ylabel('PSD sideslip Sbeta\n [rad^2/rad/s]');set(gca,'fontsize',15);
 subplot(2,1,2); loglog(w,Sxxr(:,2),'g--',omega,Prr(1:N/2),'-',omega(1:length(omega)-1),Periodograms_ug_r(1:N/2-1,2),'-.','linewidth',1.5);
@@ -203,3 +199,14 @@ subplot(2,1,2); loglog(w,Sxx(:,4),'r--',w,Sxxr(:,2));
 axis(10.^[-2 2 -14 0]); xlabel('omega [rad/s]'); ylabel('PSD yaw rate Srr [rad^2/rad/s]');set(gca,'fontsize',15);
 legend('Full Aircraft Model','Reduced Aircraft Model');set(gca,'fontsize',10);
 suptitle('Aircraft state PSD Estimates (Full vs Reduced aircraft models)');set(gca,'fontsize',15);
+
+
+
+%print -depsc2 -r1200 fig8_21a
+% pause
+% 
+%  clf
+%  plot(t,beta,'--',t, beta2); 
+%  xlabel('omega [rad/s]'); ylabel('Sbetag [rad2]')
+% % %print -depsc2 -r1200 fig8_21b
+% % pause

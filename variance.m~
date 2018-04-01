@@ -105,7 +105,6 @@ var_L_r = diag(Lr)';
 
 %Variance calculation through matlab var function
 
-%Full Model
 varBeta  = var(y(:,1));
 varPhi  = var(y(:,2));
 varp  = var(y(:,3));
@@ -114,14 +113,14 @@ varay  = var(ay);
     
 var_3 = [varBeta varPhi varp varr varay];
 
-%Reduced model
+%reduced model
+
 varBeta_r  = var(yr(:,1));
 varr_r  = var(yr(:,2));
 varay_r  = var(ayr);
     
 var_3_r = [varBeta_r varr_r varay_r];
 
-%Print Calculated Values
 disp('PSD full:');
 disp(var_PSD);
 disp('Lya full:');
@@ -134,3 +133,7 @@ disp('lya redu:');
 disp(var_L_r);
 disp('var redu:');
 disp(var_3_r);
+
+
+
+
